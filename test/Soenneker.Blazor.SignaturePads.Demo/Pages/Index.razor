@@ -1,0 +1,166 @@
+@page "/"
+@using System.Collections.Generic
+@using System.Linq
+@using Soenneker.Blazor.SignaturePads
+@using Soenneker.Blazor.SignaturePads.Configuration
+@using Soenneker.Blazor.SignaturePads.Dtos
+
+<PageTitle>SignaturePads Demo</PageTitle>
+
+<div class="demo-page">
+    <section class="demo-card intro-card">
+        <div class="eyebrow">Soenneker.Blazor.SignaturePads</div>
+        <h1>Blazor signature pad demo</h1>
+        <p>
+            Draw in the canvas, then clear, undo, or export a PNG preview. This demo keeps the focus on the component instead
+            of decorative extras.
+        </p>
+    </section>
+
+    <section class="demo-card">
+        <div class="card-header">
+            <div>
+                <h2>Signature</h2>
+                <p class="muted">Use a mouse, touch, or stylus to sign below.</p>
+            </div>
+
+            <div class="status-pill">@(_isEmpty ? "Empty" : "Signed")</div>
+        </div>
+
+        <div class="signature-frame">
+            <SignaturePadCanvas @ref="_signaturePad"
+                                Class="signature-canvas"
+                                Style="width: 100%; height: 100%;"
+                                Options="_options"
+                                ObserveResize="true"
+                                PreserveDrawingOnResize="true"
+                                OnReady="OnCanvasReady" />
+        </div>
+
+        <div class="toolbar">
+            <button class="btn btn-primary" @onclick="ExportAsync">Export PNG</button>
+            <button class="btn" @onclick="UndoAsync" disabled="@_isEmpty">Undo</button>
+            <button class="btn btn-danger" @onclick="ClearAsync" disabled="@_isEmpty">Clear</button>
+        </div>
+
+        <div class="status-row">
+            <span>@_statusMessage</span>
+            <span>@(_isEmpty ? "No strokes yet" : $"{_strokeCount} stroke group{(_strokeCount == 1 ? "" : "s")}")</span>
+        </div>
+    </section>
+
+    <section class="demo-card">
+        <div class="card-header">
+            <div>
+                <h2>Export preview</h2>
+                <p class="muted">PNG output generated from the current signature.</p>
+            </div>
+        </div>
+
+        <div class="export-preview">
+            @if (string.IsNullOrWhiteSpace(_pngDataUrl))
+            {
+                <div class="empty-preview">
+                    <div class="empty-preview-title">No preview yet</div>
+                    <div class="muted">Draw a signature and click "Export PNG".</div>
+                </div>
+            }
+            else
+            {
+                <img src="@_pngDataUrl" alt="Exported signature preview" />
+            }
+        </div>
+    </section>
+</div>
+
+@code {
+    private SignaturePadCanvas? _signaturePad;
+
+    private readonly SignaturePadOptions _options = new()
+    {
+        BackgroundColor = "rgb(255,255,255)",
+        PenColor = "#0f172a",
+        MinWidth = 0.8,
+        MaxWidth = 2.2,
+        VelocityFilterWeight = 0.7,
+        Throttle = 16,
+        MinDistance = 5
+    };
+
+    private string _statusMessage = "Loading signature pad...";
+    private string? _pngDataUrl;
+    private int _strokeCount;
+    private bool _isEmpty = true;
+
+    private Task OnCanvasReady()
+    {
+        _statusMessage = "Canvas ready. Sign in the box below.";
+        return RefreshStatsAsync();
+    }
+
+    private async Task ClearAsync()
+    {
+        if (_signaturePad is null)
+            return;
+
+        await _signaturePad.Clear();
+
+        _pngDataUrl = null;
+        _statusMessage = "Canvas cleared. Ready for a fresh signature.";
+
+        await RefreshStatsAsync();
+    }
+
+    private async Task UndoAsync()
+    {
+        if (_signaturePad is null)
+            return;
+
+        IReadOnlyList<SignaturePadPointGroup> data = await _signaturePad.ToData();
+
+        if (data.Count == 0)
+        {
+            _statusMessage = "Nothing to undo yet.";
+            return;
+        }
+
+        List<SignaturePadPointGroup> updated = data.ToList();
+        updated.RemoveAt(updated.Count - 1);
+
+        await _signaturePad.Clear();
+
+        if (updated.Count > 0)
+            await _signaturePad.FromData(updated);
+
+        _statusMessage = updated.Count == 0 ? "Last stroke removed. Canvas is empty." : "Last stroke removed.";
+        await RefreshStatsAsync();
+    }
+
+    private async Task ExportAsync()
+    {
+        if (_signaturePad is null)
+            return;
+
+        if (await _signaturePad.IsEmpty())
+        {
+            _statusMessage = "Add a signature before exporting.";
+            _isEmpty = true;
+            _strokeCount = 0;
+            return;
+        }
+
+        _pngDataUrl = await _signaturePad.ToDataUrl();
+        _statusMessage = "PNG preview exported.";
+        await RefreshStatsAsync();
+    }
+
+    private async Task RefreshStatsAsync()
+    {
+        if (_signaturePad is null)
+            return;
+
+        _isEmpty = await _signaturePad.IsEmpty();
+        _strokeCount = _isEmpty ? 0 : (await _signaturePad.ToData()).Count;
+        await InvokeAsync(StateHasChanged);
+    }
+}

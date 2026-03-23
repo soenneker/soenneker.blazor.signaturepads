@@ -1,0 +1,197 @@
+@using System.Collections.Generic
+@using System.Threading
+@using Microsoft.Extensions.Logging
+@using Microsoft.JSInterop
+@using Soenneker.Blazor.SignaturePads.Abstract
+@using Soenneker.Blazor.SignaturePads.Configuration
+@using Soenneker.Blazor.SignaturePads.Dtos
+@using Soenneker.Extensions.CancellationTokens
+@inherits Soenneker.Quark.CoreCancellableComponent
+
+@inject ISignaturePadsInterop SignaturePadInterop
+@inject ILogger<SignaturePadCanvas> Logger
+
+<canvas id="@Id"
+        @ref="_elementReference"
+        class="@Class"
+        style="@Style"
+        @attributes="Attributes"></canvas>
+
+@code {
+    private ElementReference _elementReference;
+    private bool _created;
+    private bool _resizeObserverCreated;
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    [Parameter]
+    public SignaturePadOptions? Options { get; set; }
+
+    [Parameter]
+    public bool ObserveResize { get; set; } = true;
+
+    [Parameter]
+    public bool PreserveDrawingOnResize { get; set; } = true;
+
+    [Parameter]
+    public EventCallback OnReady { get; set; }
+
+    public override string? Id { get; set; } = $"signaturepad-{Guid.NewGuid():N}";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            await SignaturePadInterop.Create(_elementReference, Id!, Options, CancellationToken);
+            _created = true;
+
+            if (ObserveResize)
+            {
+                await SignaturePadInterop.CreateResizeObserver(Id!, PreserveDrawingOnResize, CancellationToken);
+                _resizeObserverCreated = true;
+            }
+
+            if (OnReady.HasDelegate)
+                await OnReady.InvokeAsync();
+
+            return;
+        }
+
+        if (!_created)
+            return;
+
+        if (Options is not null)
+            await SignaturePadInterop.SetOptions(Id!, Options, CancellationToken);
+
+        if (ObserveResize && !_resizeObserverCreated)
+        {
+            await SignaturePadInterop.CreateResizeObserver(Id!, PreserveDrawingOnResize, CancellationToken);
+            _resizeObserverCreated = true;
+        }
+        else if (!ObserveResize && _resizeObserverCreated)
+        {
+            await SignaturePadInterop.DestroyResizeObserver(Id!, CancellationToken);
+            _resizeObserverCreated = false;
+        }
+    }
+
+    public async ValueTask Clear(CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            await SignaturePadInterop.Clear(EnsureCreated(), linked);
+    }
+
+    public async ValueTask<bool> IsEmpty(CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            return await SignaturePadInterop.IsEmpty(EnsureCreated(), linked);
+    }
+
+    public async ValueTask<string> ToDataUrl(string type = "image/png", double? encoderOptions = null, CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            return await SignaturePadInterop.ToDataUrl(EnsureCreated(), type, encoderOptions, linked);
+    }
+
+    public async ValueTask<string> ToSvg(SignaturePadSvgOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            return await SignaturePadInterop.ToSvg(EnsureCreated(), options, linked);
+    }
+
+    public async ValueTask<IReadOnlyList<SignaturePadPointGroup>> ToData(CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            return await SignaturePadInterop.ToData(EnsureCreated(), linked);
+    }
+
+    public async ValueTask FromData(IReadOnlyList<SignaturePadPointGroup> data, bool clear = true, CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            await SignaturePadInterop.FromData(EnsureCreated(), data, clear, linked);
+    }
+
+    public async ValueTask FromDataUrl(string dataUrl, SignaturePadDataUrlOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            await SignaturePadInterop.FromDataUrl(EnsureCreated(), dataUrl, options, linked);
+    }
+
+    public async ValueTask Redraw(CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            await SignaturePadInterop.Redraw(EnsureCreated(), linked);
+    }
+
+    public async ValueTask Enable(CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            await SignaturePadInterop.On(EnsureCreated(), linked);
+    }
+
+    public async ValueTask Disable(CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            await SignaturePadInterop.Off(EnsureCreated(), linked);
+    }
+
+    public async ValueTask SetOptions(SignaturePadOptions options, CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            await SignaturePadInterop.SetOptions(EnsureCreated(), options, linked);
+    }
+
+    private string EnsureCreated()
+    {
+        if (!_created || Id is null)
+            throw new InvalidOperationException("The signature pad is not ready yet. Wait until the component has rendered.");
+
+        return Id;
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_created && Id is not null)
+                await SignaturePadInterop.Destroy(Id);
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "Error disposing signature pad interop");
+        }
+
+        await base.DisposeAsync();
+    }
+}
