@@ -7,71 +7,57 @@
 
 <PageTitle>SignaturePads Demo</PageTitle>
 
-<div class="demo-page">
-    <section class="demo-card intro-card">
-        <div class="eyebrow">Soenneker.Blazor.SignaturePads</div>
-        <h1>Blazor signature pad demo</h1>
-        <p>
-            Draw in the canvas, then clear, undo, or export a PNG preview. This demo keeps the focus on the component instead
-            of decorative extras.
-        </p>
-    </section>
+<Div Space="Space.Y.Is6">
+    <DemoPanel Title="Signature" Description="Draw with mouse, touch, or stylus.">
+        <HeaderExtra>
+            <Span Rounded="Rounded.Full"
+                  Border="Border.Is1"
+                  BorderColor="BorderColor.Border"
+                  Padding='Padding.Token("2").OnX.Token("3")'
+                  TextSize="TextSize.Xs">
+                @(_isEmpty ? "Empty" : "Signed")
+            </Span>
+        </HeaderExtra>
+        <ChildContent>
+            <Div Class="signature-frame">
+                <SignaturePadCanvas @ref="_signaturePad"
+                                    Class="signature-canvas"
+                                    Style="width: 100%; height: 100%;"
+                                    Options="_options"
+                                    ObserveResize="true"
+                                    PreserveDrawingOnResize="true"
+                                    OnReady="OnCanvasReady" />
+            </Div>
 
-    <section class="demo-card">
-        <div class="card-header">
-            <div>
-                <h2>Signature</h2>
-                <p class="muted">Use a mouse, touch, or stylus to sign below.</p>
-            </div>
+            <DemoButtonRow>
+                <Button OnClick="ExportAsync">Export PNG</Button>
+                <Button OnClick="UndoAsync" Disabled="@_isEmpty" Variant="ButtonVariant.Secondary">Undo</Button>
+                <Button OnClick="ClearAsync" Disabled="@_isEmpty" Variant="ButtonVariant.Destructive">Clear</Button>
+            </DemoButtonRow>
 
-            <div class="status-pill">@(_isEmpty ? "Empty" : "Signed")</div>
-        </div>
+            <Div Display="Display.Flex" Flex="Flex.Wrap" AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2" TextSize="TextSize.Sm" TextColor="TextColor.MutedForeground">
+                <Span>@_statusMessage</Span>
+                <Span>@(_isEmpty ? "No strokes yet" : $"{_strokeCount} stroke group{(_strokeCount == 1 ? "" : "s")}")</Span>
+            </Div>
+        </ChildContent>
+    </DemoPanel>
 
-        <div class="signature-frame">
-            <SignaturePadCanvas @ref="_signaturePad"
-                                Class="signature-canvas"
-                                Style="width: 100%; height: 100%;"
-                                Options="_options"
-                                ObserveResize="true"
-                                PreserveDrawingOnResize="true"
-                                OnReady="OnCanvasReady" />
-        </div>
-
-        <div class="toolbar">
-            <button class="btn btn-primary" @onclick="ExportAsync">Export PNG</button>
-            <button class="btn" @onclick="UndoAsync" disabled="@_isEmpty">Undo</button>
-            <button class="btn btn-danger" @onclick="ClearAsync" disabled="@_isEmpty">Clear</button>
-        </div>
-
-        <div class="status-row">
-            <span>@_statusMessage</span>
-            <span>@(_isEmpty ? "No strokes yet" : $"{_strokeCount} stroke group{(_strokeCount == 1 ? "" : "s")}")</span>
-        </div>
-    </section>
-
-    <section class="demo-card">
-        <div class="card-header">
-            <div>
-                <h2>Export preview</h2>
-                <p class="muted">PNG output generated from the current signature.</p>
-            </div>
-        </div>
-
-        <div class="export-preview">
+    <DemoPanel Title="Export preview" Description="PNG data URL from the current signature.">
+        <Div Class="export-preview">
             @if (string.IsNullOrWhiteSpace(_pngDataUrl))
             {
-                <div class="empty-preview">
-                    <div class="empty-preview-title">No preview yet</div>
-                    <div class="muted">Draw a signature and click "Export PNG".</div>
-                </div>
+                <Div Space="Space.Y.Is1" TextAlignment="TextAlignment.Center" TextColor="TextColor.MutedForeground" TextSize="TextSize.Sm" Padding="Padding.Is8.OnY">
+                    <Paragraph Margin="Margin.Is0" FontWeight="FontWeight.Medium" TextColor="TextColor.Foreground">No preview yet</Paragraph>
+                    <Paragraph Margin="Margin.Is0">Draw a signature and choose Export PNG.</Paragraph>
+                </Div>
             }
             else
             {
-                <img src="@_pngDataUrl" alt="Exported signature preview" />
+                <img src="@_pngDataUrl" alt="Exported signature preview" class="signature-export-img" />
             }
-        </div>
-    </section>
-</div>
+        </Div>
+    </DemoPanel>
+</Div>
 
 @code {
     private SignaturePadCanvas? _signaturePad;

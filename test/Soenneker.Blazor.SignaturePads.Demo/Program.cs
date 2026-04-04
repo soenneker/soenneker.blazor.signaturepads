@@ -10,6 +10,7 @@ using Microsoft.JSInterop;
 using Serilog;
 using Serilog.Debugging;
 using Soenneker.Blazor.SignaturePads.Registrars;
+using Soenneker.Quark.Gen.Lucide.Generated;
 using Soenneker.Serilog.Sinks.Browser.Blazor.Registrars;
 
 namespace Soenneker.Blazor.SignaturePads.Demo;
@@ -34,6 +35,7 @@ public sealed class Program
 
             builder.Services.AddSignaturePadAsScoped();
             builder.Services.AddQuarkSuiteAsScoped();
+            builder.Services.AddLucideIconsAsScoped();
 
             WebAssemblyHost host = builder.Build();
 
