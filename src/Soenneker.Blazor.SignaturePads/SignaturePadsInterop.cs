@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,6 +7,7 @@ using Microsoft.JSInterop;
 using Soenneker.Asyncs.Initializers;
 using Soenneker.Blazor.SignaturePads.Configuration;
 using Soenneker.Blazor.SignaturePads.Dtos;
+using Soenneker.Blazor.Utils.ModuleImport.Abstract;
 using Soenneker.Blazor.Utils.ResourceLoader.Abstract;
 using Soenneker.Extensions.CancellationTokens;
 using Soenneker.Utils.CancellationScopes;
@@ -16,49 +18,45 @@ namespace Soenneker.Blazor.SignaturePads;
 /// <inheritdoc cref="ISignaturePadsInterop"/>
 public sealed class SignaturePadsInterop : ISignaturePadsInterop
 {
-    private const string _modulePath = "Soenneker.Blazor.SignaturePads/js/signaturepadsinterop.js";
+    private const string _modulePath = "/_content/Soenneker.Blazor.SignaturePads/js/signaturepadsinterop.js";
     private const string _cdnScriptPath = "https://cdn.jsdelivr.net/npm/signature_pad@5.1.3/dist/signature_pad.umd.min.js";
     private const string _cdnScriptIntegrity = "sha256-DYq7w7p8ljuA7cpV0a7QQ4O2GU6atSHKl3qDL5sNxcQ=";
     private const string _globalVariable = "SignaturePad";
-    private const string _jsCreate = "SignaturePadsInterop.create";
-    private const string _jsCreateResizeObserver = "SignaturePadsInterop.createResizeObserver";
-    private const string _jsDestroyResizeObserver = "SignaturePadsInterop.destroyResizeObserver";
-    private const string _jsDestroy = "SignaturePadsInterop.destroy";
-    private const string _jsClear = "SignaturePadsInterop.clear";
-    private const string _jsIsEmpty = "SignaturePadsInterop.isEmpty";
-    private const string _jsToDataUrl = "SignaturePadsInterop.toDataUrl";
-    private const string _jsToSvg = "SignaturePadsInterop.toSvg";
-    private const string _jsToData = "SignaturePadsInterop.toData";
-    private const string _jsFromData = "SignaturePadsInterop.fromData";
-    private const string _jsFromDataUrl = "SignaturePadsInterop.fromDataUrl";
-    private const string _jsRedraw = "SignaturePadsInterop.redraw";
-    private const string _jsOn = "SignaturePadsInterop.on";
-    private const string _jsOff = "SignaturePadsInterop.off";
-    private const string _jsSetOptions = "SignaturePadsInterop.setOptions";
+    private const string _jsCreate = "create";
+    private const string _jsCreateResizeObserver = "createResizeObserver";
+    private const string _jsDestroyResizeObserver = "destroyResizeObserver";
+    private const string _jsDestroy = "destroy";
+    private const string _jsClear = "clear";
+    private const string _jsIsEmpty = "isEmpty";
+    private const string _jsToDataUrl = "toDataUrl";
+    private const string _jsToSvg = "toSvg";
+    private const string _jsToData = "toData";
+    private const string _jsFromData = "fromData";
+    private const string _jsFromDataUrl = "fromDataUrl";
+    private const string _jsRedraw = "redraw";
+    private const string _jsOn = "on";
+    private const string _jsOff = "off";
+    private const string _jsSetOptions = "setOptions";
 
-    private readonly IJSRuntime _jsRuntime;
     private readonly IResourceLoader _resourceLoader;
+    private readonly IModuleImportUtil _moduleImportUtil;
     private readonly AsyncInitializer _initializer;
     private readonly CancellationScope _cancellationScope = new();
 
     private bool _disposed;
 
-    public SignaturePadsInterop(IJSRuntime jsRuntime, IResourceLoader resourceLoader)
+    public SignaturePadsInterop(IResourceLoader resourceLoader, IModuleImportUtil moduleImportUtil)
     {
-        _jsRuntime = jsRuntime;
         _resourceLoader = resourceLoader;
+        _moduleImportUtil = moduleImportUtil;
         _initializer = new AsyncInitializer(InitializeModule);
     }
 
     private async ValueTask InitializeModule(CancellationToken cancellationToken)
     {
-        await _resourceLoader.LoadScriptAndWaitForVariable(_cdnScriptPath,
-            _globalVariable,
-            _cdnScriptIntegrity,
-            crossOrigin: "anonymous",
-            cancellationToken: cancellationToken);
+        await _resourceLoader.LoadScriptAndWaitForVariable(_cdnScriptPath, _globalVariable, _cdnScriptIntegrity, cancellationToken: cancellationToken);
 
-        _ = await _resourceLoader.ImportModule(_modulePath, cancellationToken);
+        _ = await _moduleImportUtil.GetContentModuleReference(_modulePath, cancellationToken);
     }
 
     private async ValueTask EnsureInitialized(CancellationToken cancellationToken)
@@ -86,7 +84,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            await _jsRuntime.InvokeVoidAsync(_jsCreate, linked, elementReference, elementId, options);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidAsync(_jsCreate, linked, elementReference, elementId, options);
         }
     }
 
@@ -97,7 +96,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            await _jsRuntime.InvokeVoidAsync(_jsCreateResizeObserver, linked, elementId, preserveDrawingOnResize);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidAsync(_jsCreateResizeObserver, linked, elementId, preserveDrawingOnResize);
         }
     }
 
@@ -108,7 +108,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            await _jsRuntime.InvokeVoidAsync(_jsDestroyResizeObserver, linked, elementId);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidAsync(_jsDestroyResizeObserver, linked, elementId);
         }
     }
 
@@ -119,7 +120,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            await _jsRuntime.InvokeVoidAsync(_jsDestroy, linked, elementId);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidAsync(_jsDestroy, linked, elementId);
         }
     }
 
@@ -130,7 +132,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            await _jsRuntime.InvokeVoidAsync(_jsClear, linked, elementId);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidAsync(_jsClear, linked, elementId);
         }
     }
 
@@ -141,7 +144,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            return await _jsRuntime.InvokeAsync<bool>(_jsIsEmpty, linked, elementId);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            return await module.InvokeAsync<bool>(_jsIsEmpty, linked, elementId);
         }
     }
 
@@ -152,7 +156,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            return await _jsRuntime.InvokeAsync<string>(_jsToDataUrl, linked, elementId, type, encoderOptions);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            return await module.InvokeAsync<string>(_jsToDataUrl, linked, elementId, type, encoderOptions);
         }
     }
 
@@ -163,7 +168,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            return await _jsRuntime.InvokeAsync<string>(_jsToSvg, linked, elementId, options);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            return await module.InvokeAsync<string>(_jsToSvg, linked, elementId, options);
         }
     }
 
@@ -174,7 +180,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            List<SignaturePadPointGroup>? data = await _jsRuntime.InvokeAsync<List<SignaturePadPointGroup>>(_jsToData, linked, elementId);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            List<SignaturePadPointGroup>? data = await module.InvokeAsync<List<SignaturePadPointGroup>>(_jsToData, linked, elementId);
             return data ?? [];
         }
     }
@@ -186,7 +193,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            await _jsRuntime.InvokeVoidAsync(_jsFromData, linked, elementId, data, clear);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidAsync(_jsFromData, linked, elementId, data, clear);
         }
     }
 
@@ -197,7 +205,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            await _jsRuntime.InvokeVoidAsync(_jsFromDataUrl, linked, elementId, dataUrl, options);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidAsync(_jsFromDataUrl, linked, elementId, dataUrl, options);
         }
     }
 
@@ -208,7 +217,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            await _jsRuntime.InvokeVoidAsync(_jsRedraw, linked, elementId);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidAsync(_jsRedraw, linked, elementId);
         }
     }
 
@@ -219,7 +229,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            await _jsRuntime.InvokeVoidAsync(_jsOn, linked, elementId);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidAsync(_jsOn, linked, elementId);
         }
     }
 
@@ -230,7 +241,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            await _jsRuntime.InvokeVoidAsync(_jsOff, linked, elementId);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidAsync(_jsOff, linked, elementId);
         }
     }
 
@@ -241,7 +253,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         using (source)
         {
             await EnsureInitialized(linked);
-            await _jsRuntime.InvokeVoidAsync(_jsSetOptions, linked, elementId, options);
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidAsync(_jsSetOptions, linked, elementId, options);
         }
     }
 
@@ -252,7 +265,7 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         _disposed = true;
 
-        await _resourceLoader.DisposeModule(_modulePath);
+        await _moduleImportUtil.DisposeContentModule(_modulePath);
         await _initializer.DisposeAsync();
         await _cancellationScope.DisposeAsync();
     }

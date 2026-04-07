@@ -1,78 +1,67 @@
-export class SignaturePadsInterop {
-    constructor() {
-        this._instances = new Map();
-        this._resizeObservers = new Map();
-    }
+const signaturePadInstances = new Map();
+const signatureResizeObservers = new Map();
 
-    create(canvas, elementId, options) {
+export function create(canvas, elementId, options) {
         if (!canvas)
             throw new Error("A canvas element reference is required.");
 
-        this.destroy(elementId);
+        destroy(elementId);
 
-        this._resizeCanvas(canvas);
+        resizeSignatureCanvas(canvas);
 
         const signaturePad = new window.SignaturePad(canvas, options ?? {});
 
-        this._instances.set(elementId, {
+        signaturePadInstances.set(elementId, {
             canvas,
             signaturePad
         });
-    }
+}
+export function createResizeObserver(elementId, preserveDrawingOnResize = true) {
+        const instance = getSignaturePadEntry(elementId);
 
-    createResizeObserver(elementId, preserveDrawingOnResize = true) {
-        const instance = this._getInstance(elementId);
-
-        this.destroyResizeObserver(elementId);
+        destroyResizeObserver(elementId);
 
         const observer = new ResizeObserver(() => {
-            this._resizeCanvas(instance.canvas, instance.signaturePad, preserveDrawingOnResize);
+            resizeSignatureCanvas(instance.canvas, instance.signaturePad, preserveDrawingOnResize);
         });
 
         observer.observe(instance.canvas);
-        this._resizeObservers.set(elementId, observer);
-    }
-
-    destroyResizeObserver(elementId) {
-        const observer = this._resizeObservers.get(elementId);
+        signatureResizeObservers.set(elementId, observer);
+    };
+export function destroyResizeObserver(elementId) {
+        const observer = signatureResizeObservers.get(elementId);
 
         if (!observer)
             return;
 
         observer.disconnect();
-        this._resizeObservers.delete(elementId);
-    }
+        signatureResizeObservers.delete(elementId);
+    };
+export function destroy(elementId) {
+        destroyResizeObserver(elementId);
 
-    destroy(elementId) {
-        this.destroyResizeObserver(elementId);
-
-        const instance = this._instances.get(elementId);
+        const instance = signaturePadInstances.get(elementId);
 
         if (!instance)
             return;
 
         instance.signaturePad.off();
-        this._instances.delete(elementId);
-    }
-
-    clear(elementId) {
-        this._getInstance(elementId).signaturePad.clear();
-    }
-
-    isEmpty(elementId) {
-        return this._getInstance(elementId).signaturePad.isEmpty();
-    }
-
-    toDataUrl(elementId, type = "image/png", encoderOptions = null) {
-        return this._getInstance(elementId).signaturePad.toDataURL(type, encoderOptions ?? undefined);
-    }
-
-    toSvg(elementId, options = null) {
-        return this._getInstance(elementId).signaturePad.toSVG(options ?? undefined);
-    }
-
-    toData(elementId) {
-        const data = this._getInstance(elementId).signaturePad.toData();
+        signaturePadInstances.delete(elementId);
+    };
+export function clear(elementId) {
+        getSignaturePadEntry(elementId).signaturePad.clear();
+    };
+export function isEmpty(elementId) {
+        return getSignaturePadEntry(elementId).signaturePad.isEmpty();
+    };
+export function toDataUrl(elementId, type = "image/png", encoderOptions = null) {
+        return getSignaturePadEntry(elementId).signaturePad.toDataURL(type, encoderOptions ?? undefined);
+    };
+export function toSvg(elementId, options = null) {
+        return getSignaturePadEntry(elementId).signaturePad.toSVG(options ?? undefined);
+    };
+export function toData(elementId) {
+        const data = getSignaturePadEntry(elementId).signaturePad.toData();
 
         return data.map((group) => ({
             PenColor: group.penColor,
@@ -88,9 +77,8 @@ export class SignaturePadsInterop {
                 Pressure: point.pressure
             }))
         }));
-    }
-
-    fromData(elementId, data, clear = true) {
+    };
+export function fromData(elementId, data, clear = true) {
         const normalized = (data ?? []).map((group) => ({
             penColor: group.PenColor ?? group.penColor,
             dotSize: group.DotSize ?? group.dotSize,
@@ -106,30 +94,25 @@ export class SignaturePadsInterop {
             }))
         }));
 
-        this._getInstance(elementId).signaturePad.fromData(normalized, { clear });
-    }
-
-    async fromDataUrl(elementId, dataUrl, options = null) {
-        await this._getInstance(elementId).signaturePad.fromDataURL(dataUrl, options ?? undefined);
-    }
-
-    redraw(elementId) {
-        this._getInstance(elementId).signaturePad.redraw();
-    }
-
-    on(elementId) {
-        this._getInstance(elementId).signaturePad.on();
-    }
-
-    off(elementId) {
-        this._getInstance(elementId).signaturePad.off();
-    }
-
-    setOptions(elementId, options) {
+        getSignaturePadEntry(elementId).signaturePad.fromData(normalized, { clear });
+    };
+export async function fromDataUrl(elementId, dataUrl, options = null) {
+        await getSignaturePadEntry(elementId).signaturePad.fromDataURL(dataUrl, options ?? undefined);
+    };
+export function redraw(elementId) {
+        getSignaturePadEntry(elementId).signaturePad.redraw();
+    };
+export function on(elementId) {
+        getSignaturePadEntry(elementId).signaturePad.on();
+    };
+export function off(elementId) {
+        getSignaturePadEntry(elementId).signaturePad.off();
+    };
+export function setOptions(elementId, options) {
         if (!options)
             return;
 
-        const signaturePad = this._getInstance(elementId).signaturePad;
+        const signaturePad = getSignaturePadEntry(elementId).signaturePad;
 
         if (options.dotSize !== undefined)
             signaturePad.dotSize = options.dotSize;
@@ -160,20 +143,18 @@ export class SignaturePadsInterop {
 
         if (signaturePad.isEmpty())
             signaturePad.clear();
-    }
-
-    _getInstance(elementId) {
-        const instance = this._instances.get(elementId);
+    };
+function getSignaturePadEntry(elementId) {
+        const instance = signaturePadInstances.get(elementId);
 
         if (!instance)
             throw new Error(`SignaturePad instance '${elementId}' was not found.`);
 
         return instance;
-    }
-
-    _resizeCanvas(canvas, signaturePad = null, preserveDrawing = true) {
-        const width = this._getCanvasWidth(canvas);
-        const height = this._getCanvasHeight(canvas);
+    };
+function resizeSignatureCanvas(canvas, signaturePad = null, preserveDrawing = true) {
+        const width = getSignatureCanvasWidth(canvas);
+        const height = getSignatureCanvasHeight(canvas);
         const ratio = Math.max(window.devicePixelRatio || 1, 1);
 
         if (width <= 0 || height <= 0)
@@ -202,15 +183,10 @@ export class SignaturePadsInterop {
             signaturePad.fromData(data);
         else
             signaturePad.clear();
-    }
-
-    _getCanvasWidth(canvas) {
+    };
+function getSignatureCanvasWidth(canvas) {
         return canvas.offsetWidth || canvas.clientWidth || Number.parseInt(canvas.getAttribute("width") ?? "0", 10) || 300;
-    }
-
-    _getCanvasHeight(canvas) {
+    };
+function getSignatureCanvasHeight(canvas) {
         return canvas.offsetHeight || canvas.clientHeight || Number.parseInt(canvas.getAttribute("height") ?? "0", 10) || 150;
-    }
-}
-
-window.SignaturePadsInterop = new SignaturePadsInterop();
+    };
