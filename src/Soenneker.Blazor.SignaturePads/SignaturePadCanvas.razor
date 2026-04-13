@@ -6,6 +6,7 @@
 @using Soenneker.Blazor.SignaturePads.Configuration
 @using Soenneker.Blazor.SignaturePads.Dtos
 @using Soenneker.Extensions.CancellationTokens
+@using Soenneker.Blazor.Utils.Ids
 @inherits Soenneker.Quark.CoreCancellableComponent
 
 @inject ISignaturePadsInterop SignaturePadInterop
@@ -40,7 +41,7 @@
     [Parameter]
     public EventCallback OnReady { get; set; }
 
-    public override string? Id { get; set; } = $"signaturepad-{Guid.NewGuid():N}";
+    public override string? Id { get; set; } = BlazorIdGenerator.New("signaturepad");
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
