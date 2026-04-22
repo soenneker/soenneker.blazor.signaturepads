@@ -1,20 +1,19 @@
 using Soenneker.Blazor.SignaturePads.Abstract;
-using Soenneker.Tests.FixturedUnit;
-using Xunit;
+using Soenneker.Tests.HostedUnit;
 
 namespace Soenneker.Blazor.SignaturePads.Tests;
 
-[Collection("Collection")]
-public sealed class SignaturePadTests : FixturedUnitTest
+[ClassDataSource<Host>(Shared = SharedType.PerTestSession)]
+public sealed class SignaturePadTests : HostedUnitTest
 {
     private readonly ISignaturePad _blazorlibrary;
 
-    public SignaturePadTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+    public SignaturePadTests(Host host) : base(host)
     {
         _blazorlibrary = Resolve<ISignaturePad>(true);
     }
 
-    [Fact]
+    [Test]
     public void Default()
     {
 

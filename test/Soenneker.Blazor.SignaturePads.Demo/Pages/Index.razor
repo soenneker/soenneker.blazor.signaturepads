@@ -35,7 +35,7 @@
                 <Button OnClick="ClearAsync" Disabled="@_isEmpty" Variant="ButtonVariant.Destructive">Clear</Button>
             </DemoButtonRow>
 
-            <Div Display="Display.Flex" Flex="Flex.Wrap" AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2" TextSize="TextSize.Sm" TextColor="TextColor.MutedForeground">
+            <Div Display="Display.Flex" Flex=@("flex-wrap") AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2" TextSize="TextSize.Sm" TextColor="TextColor.MutedForeground">
                 <Span>@_statusMessage</Span>
                 <Span>@(_isEmpty ? "No strokes yet" : $"{_strokeCount} stroke group{(_strokeCount == 1 ? "" : "s")}")</Span>
             </Div>
