@@ -7,27 +7,18 @@
 @using Soenneker.Blazor.SignaturePads.Dtos
 @using Soenneker.Extensions.CancellationTokens
 @using Soenneker.Blazor.Utils.Ids
-@inherits Soenneker.Quark.CoreCancellableComponent
+@inherits Soenneker.Lepton.Suite.LeptonCancellableIdentifiableContentElement
 
 @inject ISignaturePadsInterop SignaturePadInterop
 @inject ILogger<SignaturePadCanvas> Logger
 
-<canvas id="@Id"
-        @ref="_elementReference"
-        class="@Class"
-        style="@Style"
-        @attributes="Attributes"></canvas>
+<canvas @ref="_elementReference"
+        @attributes="EffectiveAttributes"></canvas>
 
 @code {
     private ElementReference _elementReference;
     private bool _created;
     private bool _resizeObserverCreated;
-
-    [Parameter]
-    public string? Class { get; set; }
-
-    [Parameter]
-    public string? Style { get; set; }
 
     [Parameter]
     public SignaturePadOptions? Options { get; set; }
@@ -41,7 +32,10 @@
     [Parameter]
     public EventCallback OnReady { get; set; }
 
-    public override string? Id { get; set; } = BlazorIdGenerator.New("signaturepad");
+    public SignaturePadCanvas()
+    {
+        Id = BlazorIdGenerator.New("signaturepad");
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
