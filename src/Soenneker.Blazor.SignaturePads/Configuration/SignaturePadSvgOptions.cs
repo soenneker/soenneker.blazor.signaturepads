@@ -7,9 +7,15 @@ namespace Soenneker.Blazor.SignaturePads.Configuration;
 /// </summary>
 public sealed class SignaturePadSvgOptions
 {
+    /// <summary>
+    /// Gets or sets a value indicating whether include background color.
+    /// </summary>
     [JsonPropertyName("includeBackgroundColor")]
     public bool IncludeBackgroundColor { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether include data url.
+    /// </summary>
     [JsonPropertyName("includeDataUrl")]
     public bool IncludeDataUrl { get; set; }
 }
