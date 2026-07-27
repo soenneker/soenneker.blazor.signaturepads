@@ -11,14 +11,12 @@ namespace Soenneker.Blazor.SignaturePads.Registrars;
 public static class SignaturePadRegistrar
 {
     /// <summary>
-    /// Adds <see cref="ISignaturePadsInterop"/> and <see cref="ISignaturePad"/> as scoped services.
+    /// Adds <see cref="ISignaturePadsInterop"/> as scoped services.
     /// </summary>
     public static IServiceCollection AddSignaturePadAsScoped(this IServiceCollection services)
     {
         services.AddResourceLoaderAsScoped()
                 .TryAddScoped<ISignaturePadsInterop, SignaturePadsInterop>();
-
-        services.TryAddScoped<ISignaturePad, SignaturePad>();
 
         return services;
     }
