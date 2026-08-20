@@ -763,9 +763,6 @@
   .h-\(--radix-navigation-menu-viewport-height\) {
     height: var(--radix-navigation-menu-viewport-height);
   }
-  .h-0 {
-    height: 0px;
-  }
   .h-0\.5 {
     height: calc(var(--spacing) * 0.5);
   }
@@ -808,29 +805,17 @@
   .h-10 {
     height: calc(var(--spacing) * 10);
   }
-  .h-11 {
-    height: calc(var(--spacing) * 11);
-  }
   .h-12 {
     height: calc(var(--spacing) * 12);
   }
   .h-14 {
     height: calc(var(--spacing) * 14);
   }
-  .h-16 {
-    height: calc(var(--spacing) * 16);
-  }
-  .h-20 {
-    height: calc(var(--spacing) * 20);
-  }
   .h-40 {
     height: calc(var(--spacing) * 40);
   }
   .h-64 {
     height: calc(var(--spacing) * 64);
-  }
-  .h-72 {
-    height: calc(var(--spacing) * 72);
   }
   .h-\[30px\] {
     height: 30px;
@@ -840,9 +825,6 @@
   }
   .h-\[calc\(100\%-1px\)\] {
     height: calc(100% - 1px);
-  }
-  .h-\[calc\(100vh-var\(--header-height\)-2rem\)\] {
-    height: calc(100vh - var(--header-height) - 2rem);
   }
   .h-auto {
     height: auto;
@@ -865,6 +847,9 @@
   .max-h-60 {
     max-height: calc(var(--spacing) * 60);
   }
+  .max-h-72 {
+    max-height: calc(var(--spacing) * 72);
+  }
   .max-h-\[55vh\] {
     max-height: 55vh;
   }
@@ -876,6 +861,9 @@
   }
   .max-h-\[300px\] {
     max-height: 300px;
+  }
+  .max-h-\[calc\(100vh-var\(--header-height\)-2rem\)\] {
+    max-height: calc(100vh - var(--header-height) - 2rem);
   }
   .max-h-\[min\(calc\(--spacing\(72\)---spacing\(9\)\)\,calc\(var\(--available-height\)---spacing\(9\)\)\)\] {
     max-height: min(calc(calc(var(--spacing) * 72) - calc(var(--spacing) * 9)), calc(var(--available-height) - calc(var(--spacing) * 9)));
@@ -889,11 +877,23 @@
   .min-h-0 {
     min-height: 0px;
   }
+  .min-h-8 {
+    min-height: calc(var(--spacing) * 8);
+  }
   .min-h-9 {
     min-height: calc(var(--spacing) * 9);
   }
+  .min-h-11 {
+    min-height: calc(var(--spacing) * 11);
+  }
+  .min-h-12 {
+    min-height: calc(var(--spacing) * 12);
+  }
   .min-h-14 {
     min-height: calc(var(--spacing) * 14);
+  }
+  .min-h-16 {
+    min-height: calc(var(--spacing) * 16);
   }
   .min-h-20 {
     min-height: calc(var(--spacing) * 20);
