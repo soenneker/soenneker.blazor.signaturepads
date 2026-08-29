@@ -6,59 +6,120 @@
 
 # Soenneker.Blazor.SignaturePads
 
-Blazor interop for browser-facing signature pad functionality.
+A Blazor component and JS interop wrapper for drawing, restoring, and exporting signatures with `signature_pad`.
 
-## Install
+[Live demo](https://soenneker.github.io/soenneker.blazor.signaturepads)
+
+## Installation
 
 ```bash
 dotnet add package Soenneker.Blazor.SignaturePads
 ```
 
-## Quick start
+Register the interop service in `Program.cs`:
 
 ```csharp
 using Soenneker.Blazor.SignaturePads.Registrars;
-using Microsoft.Extensions.DependencyInjection;
 
-var services = new ServiceCollection();
-var result = services.AddSignaturePadAsScoped();
+builder.Services.AddSignaturePadAsScoped();
 ```
 
-Adds `ISignaturePadsInterop` as scoped services.
+Add the component namespace to `_Imports.razor`:
 
-## What you get
+```razor
+@using Soenneker.Blazor.SignaturePads
+```
 
-- `ISignaturePadsInterop` — Blazor interop for browser-facing signature pad functionality.
-- `SignaturePadRegistrar` — Registration for the interop and utility services.
-- `SignaturePadDataUrlOptions` — Options for drawing an existing image onto the canvas via `fromDataURL()`.
-- `SignaturePadOptions` — Configuration options forwarded to the underlying `signature_pad` instance.
-- `SignaturePadPoint` — Represents a single point in a signature stroke.
-- `SignaturePadPointGroup` — Represents a stroke group returned by `signature_pad`.
-- `SignaturePadSvgOptions` — Options for creating SVG output from the current signature.
+## Basic usage
 
-## API at a glance
+Give the canvas an explicit rendered size, wait for `OnReady`, and use the component reference for operations:
 
-| API | What it does | Result / important behavior |
-| --- | --- | --- |
-| `ISignaturePadsInterop.Initialize(cancellationToken)` | Ensures the JavaScript dependencies for this package have been loaded. | A task that completes when the Signature Pads is ready for use. |
-| `ISignaturePadsInterop.Create(elementReference, elementId, options, cancellationToken)` | Creates a signature pad instance on the specified canvas element. | A task that completes when the create operation is complete. |
-| `ISignaturePadsInterop.CreateResizeObserver(elementId, preserveDrawingOnResize, cancellationToken)` | Attaches a resize observer to the existing canvas so the signature can be redrawn after size changes. | A task that completes when the resize observer creation is complete. |
-| `ISignaturePadsInterop.Destroy(elementId, cancellationToken)` | Destroys the signature pad instance and any related observers. | A task that completes when the destroy operation is complete. |
-| `ISignaturePadsInterop.Clear(elementId, cancellationToken)` | Clears the current signature. | A task that completes when the Signature Pads has been cleared. |
-| `ISignaturePadsInterop.IsEmpty(elementId, cancellationToken)` | Returns true when the current signature pad is empty. | true if the signature pad contains no strokes; otherwise, false. |
-| `ISignaturePadsInterop.ToDataUrl(elementId, type, encoderOptions, cancellationToken)` | Exports the current signature as a data URL. | A task whose result is the text returned by to Data URL. |
-| `ISignaturePadsInterop.ToSvg(elementId, options, cancellationToken)` | Exports the current signature as SVG markup. | A task whose result is the text returned by to Svg. |
-| `ISignaturePadsInterop.ToData(elementId, cancellationToken)` | Returns the current signature stroke data. | The signature's current stroke data. |
-| `ISignaturePadsInterop.FromData(elementId, data, clear, cancellationToken)` | Rehydrates the canvas from previously exported stroke data. | A task that completes when the from data operation is complete. |
-| `ISignaturePadsInterop.FromDataUrl(elementId, dataUrl, options, cancellationToken)` | Draws an existing image onto the canvas. | A task that completes when the from data url operation is complete. |
-| `ISignaturePadsInterop.Redraw(elementId, cancellationToken)` | Redraws the current internal stroke data onto the canvas. | A task that completes when the redraw operation is complete. |
-| `ISignaturePadsInterop.On(elementId, cancellationToken)` | Enables pointer listeners on the signature pad. | A task that completes when the on operation is complete. |
-| `ISignaturePadsInterop.Off(elementId, cancellationToken)` | Disables pointer listeners on the signature pad. | A task that completes when the off operation is complete. |
-| `ISignaturePadsInterop.SetOptions(elementId, options, cancellationToken)` | Updates writable signature pad options on the current instance. | A task that completes when the options has been stored. |
-| `SignaturePadRegistrar.AddSignaturePadAsScoped(services)` | Adds `ISignaturePadsInterop` as scoped services. | The same service collection, so additional registrations can be chained. |
-| `SignaturePadDataUrlOptions.Ratio` | Gets or sets ratio. | Gets or sets ratio. |
-| `SignaturePadDataUrlOptions.Width` | Gets or sets width. | Gets or sets width. |
+```razor
+@using Soenneker.Blazor.SignaturePads.Configuration
 
-## Practical notes
+<SignaturePadCanvas @ref="_signaturePad"
+                    Style="width: 100%; height: 220px; border: 1px solid #bbb;"
+                    Options="_options"
+                    OnReady="HandleReady"
+                    aria-label="Signature input" />
 
-- Cancellation stops pending work; it does not undo work that has already completed.
+<button type="button" disabled="@(!_ready)" @onclick="ClearAsync">Clear</button>
+<button type="button" disabled="@(!_ready)" @onclick="ExportAsync">Export PNG</button>
+
+@if (_png is not null)
+{
+    <img src="@_png" alt="Signature preview" />
+}
+
+@code {
+    private SignaturePadCanvas? _signaturePad;
+    private bool _ready;
+    private string? _png;
+
+    private readonly SignaturePadOptions _options = new()
+    {
+        PenColor = "#111827",
+        BackgroundColor = "rgb(255,255,255)",
+        MinWidth = 0.8,
+        MaxWidth = 2.2
+    };
+
+    private void HandleReady() => _ready = true;
+
+    private async Task ClearAsync() => await _signaturePad!.Clear();
+
+    private async Task ExportAsync()
+    {
+        if (!await _signaturePad!.IsEmpty())
+            _png = await _signaturePad.ToDataUrl("image/png");
+    }
+}
+```
+
+Public component methods throw until the canvas has completed its first interactive render. `OnReady` is the safest point to enable controls that call them.
+
+## Saving and restoring signatures
+
+Choose the representation based on what you need later:
+
+```csharp
+// Editable stroke data: best for restoring and continuing to draw.
+IReadOnlyList<SignaturePadPointGroup> strokes = await _signaturePad.ToData();
+await _signaturePad.FromData(strokes);
+
+// Raster output for display or upload.
+string pngDataUrl = await _signaturePad.ToDataUrl("image/png");
+
+// Generated SVG markup.
+string svg = await _signaturePad.ToSvg();
+```
+
+`FromData(data, clear: true)` replaces existing strokes by default. Pass `clear: false` to append them. `FromDataUrl()` draws an image onto the canvas; it does not recreate editable stroke groups.
+
+Data URLs contain a media-type prefix and Base64 payload. If an API expects bytes, remove the prefix and decode the payload before upload. Do not store large data URLs in normal form fields or logs.
+
+## Resizing
+
+`ObserveResize` defaults to `true` and scales the canvas backing buffer for the device pixel ratio. The canvas still needs a non-zero CSS width and height from your layout.
+
+With `PreserveDrawingOnResize="true"`, existing point data is redrawn after a resize. Points retain their original canvas coordinates; changing the aspect ratio or making the canvas substantially smaller can clip or reposition the visible signature. Set it to `false` when a resize should clear the pad.
+
+## Options and controls
+
+`SignaturePadOptions` configures dot size, minimum and maximum line width, throttling, minimum point distance, background color, pen color, velocity filtering, and canvas compositing. Updated option values are applied after subsequent component renders, or immediately through `SetOptions()`.
+
+The component also exposes:
+
+- `Clear()` and `IsEmpty()`;
+- `Enable()` and `Disable()` for pointer listeners;
+- `ToData()`, `ToDataUrl()`, and `ToSvg()` for export;
+- `FromData()`, `FromDataUrl()`, and `Redraw()` for restoration.
+
+## Security and accessibility
+
+- Signatures are sensitive personal data. Protect them in transit and storage, restrict access, and define retention rules appropriate to your application.
+- Loading a remote image with `FromDataUrl()` can taint the canvas when the image server does not permit cross-origin use. A tainted canvas cannot be exported to PNG or SVG data successfully.
+- `ToSvg()` returns markup. If you insert it as raw HTML, sanitize it according to your application's trust boundary; rendering it through an `<img>` data URL avoids direct DOM injection.
+- A canvas is not an accessible substitute for consent or identity verification. Provide instructions, an accessible name, keyboard-operable controls, and an alternative completion method.
+
+The package loads pinned `signature_pad` JavaScript from jsDelivr with subresource integrity validation. Applications that disallow third-party scripts must account for that origin in their Content Security Policy or provide an approved asset-loading strategy.

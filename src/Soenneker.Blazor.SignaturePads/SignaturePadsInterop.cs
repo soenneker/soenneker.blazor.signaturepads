@@ -268,8 +268,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         _disposed = true;
 
-        await _moduleImportUtil.DisposeContentModule(_modulePath);
-        await _initializer.DisposeAsync();
         await _cancellationScope.DisposeAsync();
+        await _initializer.DisposeAsync();
+        await _moduleImportUtil.DisposeContentModule(_modulePath);
     }
 }

@@ -18,6 +18,7 @@
     private ElementReference _elementReference;
     private bool _created;
     private bool _resizeObserverCreated;
+    private bool _preserveDrawingOnResize;
 
     [Parameter]
     public SignaturePadOptions? Options { get; set; }
@@ -49,6 +50,7 @@
             {
                 await SignaturePadInterop.CreateResizeObserver(Id!, PreserveDrawingOnResize, CancellationToken);
                 _resizeObserverCreated = true;
+                _preserveDrawingOnResize = PreserveDrawingOnResize;
             }
 
             if (OnReady.HasDelegate)
@@ -67,6 +69,12 @@
         {
             await SignaturePadInterop.CreateResizeObserver(Id!, PreserveDrawingOnResize, CancellationToken);
             _resizeObserverCreated = true;
+            _preserveDrawingOnResize = PreserveDrawingOnResize;
+        }
+        else if (ObserveResize && _resizeObserverCreated && _preserveDrawingOnResize != PreserveDrawingOnResize)
+        {
+            await SignaturePadInterop.CreateResizeObserver(Id!, PreserveDrawingOnResize, CancellationToken);
+            _preserveDrawingOnResize = PreserveDrawingOnResize;
         }
         else if (!ObserveResize && _resizeObserverCreated)
         {
