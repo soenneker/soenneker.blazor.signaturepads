@@ -13,6 +13,8 @@ public static class SignaturePadRegistrar
     /// <summary>
     /// Adds <see cref="ISignaturePadsInterop"/> as scoped services.
     /// </summary>
+    /// <param name="services">Service collection that receives the registration.</param>
+    /// <returns>The same service collection, so additional registrations can be chained.</returns>
     public static IServiceCollection AddSignaturePadAsScoped(this IServiceCollection services)
     {
         services.AddResourceLoaderAsScoped()
