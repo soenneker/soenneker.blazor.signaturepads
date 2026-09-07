@@ -58,14 +58,9 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         _ = await _moduleImportUtil.GetContentModuleReference(_modulePath, cancellationToken);
     }
 
-    private async ValueTask EnsureInitialized(CancellationToken cancellationToken)
+    private ValueTask EnsureInitialized(CancellationToken cancellationToken)
     {
-        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
-
-        using (source)
-        {
-            await _initializer.Init(linked);
-        }
+        return _initializer.Init(cancellationToken);
     }
 
     public async ValueTask Initialize(CancellationToken cancellationToken = default)
