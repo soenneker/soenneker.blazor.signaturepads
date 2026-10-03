@@ -19,6 +19,7 @@
     private bool _created;
     private bool _resizeObserverCreated;
     private bool _preserveDrawingOnResize;
+    private SignaturePadOptionsSnapshot? _appliedOptions;
 
     [Parameter]
     public SignaturePadOptions? Options { get; set; }
@@ -43,8 +44,10 @@
 
         if (firstRender)
         {
+            SignaturePadOptionsSnapshot? snapshot = Options is null ? null : SignaturePadOptionsSnapshot.From(Options);
             await SignaturePadInterop.Create(_elementReference, Id!, Options, CancellationToken);
             _created = true;
+            _appliedOptions = snapshot;
 
             if (ObserveResize)
             {
@@ -63,7 +66,14 @@
             return;
 
         if (Options is not null)
-            await SignaturePadInterop.SetOptions(Id!, Options, CancellationToken);
+        {
+            var snapshot = SignaturePadOptionsSnapshot.From(Options);
+            if (_appliedOptions != snapshot)
+            {
+                await SignaturePadInterop.SetOptions(Id!, Options, CancellationToken);
+                _appliedOptions = snapshot;
+            }
+        }
 
         if (ObserveResize && !_resizeObserverCreated)
         {
@@ -165,6 +175,7 @@
 
     public async ValueTask SetOptions(SignaturePadOptions options, CancellationToken cancellationToken = default)
     {
+        _appliedOptions = null;
         CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)

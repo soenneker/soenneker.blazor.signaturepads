@@ -17,7 +17,7 @@ namespace Soenneker.Blazor.SignaturePads;
 /// <inheritdoc cref="ISignaturePadsInterop"/>
 public sealed class SignaturePadsInterop : ISignaturePadsInterop
 {
-    private const string _modulePath = "_content/Soenneker.Blazor.SignaturePads/js/signaturepadsinterop.js";
+    private const string _modulePath = "./_content/Soenneker.Blazor.SignaturePads/js/signaturepadsinterop.js";
     private const string _cdnScriptPath = "https://cdn.jsdelivr.net/npm/signature_pad@5.1.4/dist/signature_pad.umd.min.js";
     private const string _cdnScriptIntegrity = "sha256-461lE1AFUIPo9jXQdZi8Opbx574HWXe0kGfSiAMGavQ=";
     private const string _globalVariable = "SignaturePad";

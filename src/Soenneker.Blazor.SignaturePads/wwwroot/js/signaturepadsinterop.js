@@ -61,22 +61,7 @@ export function toSvg(elementId, options = null) {
         return getSignaturePadEntry(elementId).signaturePad.toSVG(options ?? undefined);
     };
 export function toData(elementId) {
-        const data = getSignaturePadEntry(elementId).signaturePad.toData();
-
-        return data.map((group) => ({
-            PenColor: group.penColor,
-            DotSize: group.dotSize,
-            MinWidth: group.minWidth,
-            MaxWidth: group.maxWidth,
-            VelocityFilterWeight: group.velocityFilterWeight,
-            CompositeOperation: group.compositeOperation,
-            Points: (group.points ?? []).map((point) => ({
-                Time: point.time,
-                X: point.x,
-                Y: point.y,
-                Pressure: point.pressure
-            }))
-        }));
+        return getSignaturePadEntry(elementId).signaturePad.toData();
     };
 export function fromData(elementId, data, clear = true) {
         const normalized = (data ?? []).map((group) => ({
@@ -96,8 +81,8 @@ export function fromData(elementId, data, clear = true) {
 
         getSignaturePadEntry(elementId).signaturePad.fromData(normalized, { clear });
     };
-export async function fromDataUrl(elementId, dataUrl, options = null) {
-        await getSignaturePadEntry(elementId).signaturePad.fromDataURL(dataUrl, options ?? undefined);
+export function fromDataUrl(elementId, dataUrl, options = null) {
+        return getSignaturePadEntry(elementId).signaturePad.fromDataURL(dataUrl, options ?? undefined);
     };
 export function redraw(elementId) {
         getSignaturePadEntry(elementId).signaturePad.redraw();
