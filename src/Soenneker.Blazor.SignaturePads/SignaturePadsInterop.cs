@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,7 +80,7 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         {
             await EnsureInitialized(linked);
             IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsCreate, linked, elementReference, elementId, options);
+            await module.InvokeVoidAsync(_jsCreate, linked, elementReference, elementId, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadOptions));
         }
     }
 
@@ -163,7 +164,7 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         {
             await EnsureInitialized(linked);
             IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            return await module.InvokeAsync<string>(_jsToSvg, linked, elementId, options);
+            return await module.InvokeAsync<string>(_jsToSvg, linked, elementId, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadSvgOptions));
         }
     }
 
@@ -175,7 +176,8 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         {
             await EnsureInitialized(linked);
             IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            List<SignaturePadPointGroup>? data = await module.InvokeAsync<List<SignaturePadPointGroup>>(_jsToData, linked, elementId);
+            JsonElement payload = await module.InvokeAsync<JsonElement>(_jsToData, linked, elementId);
+            List<SignaturePadPointGroup>? data = payload.Deserialize(InteropJsonContext.Default.ListSignaturePadPointGroup);
             return data ?? [];
         }
     }
@@ -188,7 +190,7 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         {
             await EnsureInitialized(linked);
             IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsFromData, linked, elementId, data, clear);
+            await module.InvokeVoidAsync(_jsFromData, linked, elementId, JsonSerializer.SerializeToElement(data, InteropJsonContext.Default.IReadOnlyListSignaturePadPointGroup), clear);
         }
     }
 
@@ -200,7 +202,7 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         {
             await EnsureInitialized(linked);
             IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsFromDataUrl, linked, elementId, dataUrl, options);
+            await module.InvokeVoidAsync(_jsFromDataUrl, linked, elementId, dataUrl, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadDataUrlOptions));
         }
     }
 
@@ -248,7 +250,7 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
         {
             await EnsureInitialized(linked);
             IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsSetOptions, linked, elementId, options);
+            await module.InvokeVoidAsync(_jsSetOptions, linked, elementId, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadOptions));
         }
     }
 
