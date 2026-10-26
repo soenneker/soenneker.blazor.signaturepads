@@ -2,7 +2,6 @@
 # Do not edit manually. Class names for Tailwind @source to scan.
 bg-primary
 border
-border-b
 border-border
 flex
 font-medium
@@ -11,13 +10,12 @@ gap-2
 gap-3
 inline-flex
 m-0
-p-3
-pb-4
+p-2
+p-4
+p-6
+p-8
 px-2
-px-4
-py-2
-py-6
-py-8
+px-3
 rounded-full
 rounded-lg
 space-y-1
