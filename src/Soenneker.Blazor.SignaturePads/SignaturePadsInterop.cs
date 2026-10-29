@@ -78,9 +78,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsCreate, linked, elementReference, elementId, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadOptions));
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                await module.InvokeVoidAsync(_jsCreate, linked, elementReference, elementId, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadOptions));
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.Create' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -90,9 +97,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsCreateResizeObserver, linked, elementId, preserveDrawingOnResize);
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                await module.InvokeVoidAsync(_jsCreateResizeObserver, linked, elementId, preserveDrawingOnResize);
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.CreateResizeObserver' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -102,9 +116,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsDestroyResizeObserver, linked, elementId);
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                await module.InvokeVoidAsync(_jsDestroyResizeObserver, linked, elementId);
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.DestroyResizeObserver' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -114,9 +135,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsDestroy, linked, elementId);
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                await module.InvokeVoidAsync(_jsDestroy, linked, elementId);
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.Destroy' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -126,9 +154,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsClear, linked, elementId);
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                await module.InvokeVoidAsync(_jsClear, linked, elementId);
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.Clear' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -138,9 +173,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            return await module.InvokeAsync<bool>(_jsIsEmpty, linked, elementId);
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                return await module.InvokeAsync<bool>(_jsIsEmpty, linked, elementId);
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.IsEmpty' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -150,9 +192,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            return await module.InvokeAsync<string>(_jsToDataUrl, linked, elementId, type, encoderOptions);
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                return await module.InvokeAsync<string>(_jsToDataUrl, linked, elementId, type, encoderOptions);
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.ToDataUrl' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -162,9 +211,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            return await module.InvokeAsync<string>(_jsToSvg, linked, elementId, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadSvgOptions));
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                return await module.InvokeAsync<string>(_jsToSvg, linked, elementId, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadSvgOptions));
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.ToSvg' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -174,11 +230,18 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            JsonElement payload = await module.InvokeAsync<JsonElement>(_jsToData, linked, elementId);
-            List<SignaturePadPointGroup>? data = payload.Deserialize(InteropJsonContext.Default.ListSignaturePadPointGroup);
-            return data ?? [];
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                JsonElement payload = await module.InvokeAsync<JsonElement>(_jsToData, linked, elementId);
+                List<SignaturePadPointGroup>? data = payload.Deserialize(InteropJsonContext.Default.ListSignaturePadPointGroup);
+                return data ?? [];
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.ToData' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -188,9 +251,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsFromData, linked, elementId, JsonSerializer.SerializeToElement(data, InteropJsonContext.Default.IReadOnlyListSignaturePadPointGroup), clear);
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                await module.InvokeVoidAsync(_jsFromData, linked, elementId, JsonSerializer.SerializeToElement(data, InteropJsonContext.Default.IReadOnlyListSignaturePadPointGroup), clear);
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.FromData' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -200,9 +270,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsFromDataUrl, linked, elementId, dataUrl, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadDataUrlOptions));
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                await module.InvokeVoidAsync(_jsFromDataUrl, linked, elementId, dataUrl, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadDataUrlOptions));
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.FromDataUrl' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -212,9 +289,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsRedraw, linked, elementId);
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                await module.InvokeVoidAsync(_jsRedraw, linked, elementId);
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.Redraw' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -224,9 +308,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsOn, linked, elementId);
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                await module.InvokeVoidAsync(_jsOn, linked, elementId);
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.On' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -236,9 +327,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsOff, linked, elementId);
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                await module.InvokeVoidAsync(_jsOff, linked, elementId);
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.Off' failed: {exception.Message}", exception);
+            }
         }
     }
 
@@ -248,9 +346,16 @@ public sealed class SignaturePadsInterop : ISignaturePadsInterop
 
         using (source)
         {
-            await EnsureInitialized(linked);
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            await module.InvokeVoidAsync(_jsSetOptions, linked, elementId, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadOptions));
+            try
+            {
+                await EnsureInitialized(linked);
+                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+                await module.InvokeVoidAsync(_jsSetOptions, linked, elementId, JsonSerializer.SerializeToElement(options, InteropJsonContext.Default.SignaturePadOptions));
+            }
+            catch (JSException exception)
+            {
+                throw new JSException($"JavaScript operation 'SignaturePadsInterop.SetOptions' failed: {exception.Message}", exception);
+            }
         }
     }
 
